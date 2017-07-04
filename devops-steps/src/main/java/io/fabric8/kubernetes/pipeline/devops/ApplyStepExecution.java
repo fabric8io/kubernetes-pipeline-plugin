@@ -283,10 +283,11 @@ public class ApplyStepExecution extends AbstractSynchronousStepExecution<String>
             String routeId = id;
             KubernetesHelper.setName(route, namespace, routeId);
             RouteSpec routeSpec = new RouteSpec();
-            ObjectReference objectRef = new ObjectReference();
-            objectRef.setName(id);
-            objectRef.setNamespace(namespace);
-            routeSpec.setTo(objectRef);
+            RouteTargetReference routeTargetReference = new RouteTargetReference();
+            routeTargetReference.setKind("Service");
+            routeTargetReference.setName(id);
+            routeTargetReference.setWeight(100);
+            routeSpec.setTo(routeTargetReference);
             if (!Strings.isNullOrBlank(routeDomainPostfix)) {
                 String host = Strings.stripSuffix(Strings.stripSuffix(id, "-service"), ".");
                 routeSpec.setHost(host + "." + Strings.stripPrefix(routeDomainPostfix, "."));
