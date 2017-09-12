@@ -116,6 +116,7 @@ public class ApplyStepExecution extends AbstractSynchronousStepExecution<List<Ha
     private transient String buildConfigName;
     private transient String buildConfigNamespace;
     private transient String buildName;
+    private static final long DEFAULT_CONTAINER_READY_TIMEOUT = 5;
     
     @Override
     public List<HasMetadata> run() throws Exception {
@@ -240,9 +241,11 @@ public class ApplyStepExecution extends AbstractSynchronousStepExecution<List<Ha
                 }
             }
             List<HasMetadata> answer = this.items;
-            if (step.getReadinessTimeout().intValue() > 0) {
-                answer = kubernetes.resourceList(items).waitUntilReady(step.getReadinessTimeout(), TimeUnit.MILLISECONDS);
+            long timeout = step.getReadinessTimeout().intValue();
+            if (timeout > 0) {
+                timeout = DEFAULT_CONTAINER_READY_TIMEOUT;
             }
+            answer = kubernetes.resourceList(items).waitUntilReady(timeout, TimeUnit.MINUTES);
 
             // now lets try annotate the BuildConfig with the running services in this environment
             Map<String,String> serviceUrls = new HashMap<>();
